@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ScRec — Screen Recorder. Free Forever.</title>
+<link rel="icon" href="screc_favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="screc_favicon_32.png">
+<link rel="apple-touch-icon" href="screc_favicon_180.png">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Syne+Mono&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0a0a0f;
+  --surface: #111118;
+  --surface2: #18181f;
+  --border: #ffffff0f;
+  --border2: #ffffff18;
+  --text: #f0f0f8;
+  --muted: #6b6b80;
+  --accent: #00e5ff;
+  --accent2: #7c3aed;
+  --accent-glow: rgba(0,229,255,0.15);
+  --red: #ff4444;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── NOISE GRAIN ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none; opacity: 0.6;
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 60px;
+  background: linear-gradient(to bottom, rgba(10,10,15,0.95), transparent);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  animation: slideDown 0.6s ease both;
+}
+
+.nav-logo {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 1.4rem;
+  letter-spacing: -0.5px;
+  color: var(--text);
+}
+.nav-logo span { color: var(--accent); }
+
+.nav-links { display: flex; gap: 36px; align-items: center; }
+.nav-links a {
+  font-size: 0.85rem; color: var(--muted); text-decoration: none;
+  transition: color 0.2s; cursor: pointer;
+}
+.nav-links a:hover { color: var(--text); }
+
+.nav-cta {
+  background: var(--accent); color: #000;
+  border: none; border-radius: 8px;
+  padding: 9px 20px;
+  font-family: 'Syne', sans-serif; font-weight: 700;
+  font-size: 0.82rem; cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+  letter-spacing: 0.02em;
+}
+.nav-cta:hover { opacity: 0.85; transform: scale(1.03); }
+
+/* ── HERO ── */
+.hero {
+  position: relative; z-index: 1;
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center;
+  padding: 120px 20px 80px;
+}
+
+.hero-glow {
+  position: absolute;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(0,229,255,0.08) 0%, transparent 70%);
+  top: 50%; left: 50%; transform: translate(-50%, -60%);
+  pointer-events: none;
+}
+
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: 20px; padding: 6px 16px;
+  font-size: 0.78rem; color: var(--accent);
+  font-family: 'Syne Mono', monospace;
+  margin-bottom: 32px;
+  animation: fadeUp 0.6s ease 0.1s both;
+}
+.badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: blink 1.5s ease infinite; }
+
+.hero h1 {
+  font-family: 'Syne', sans-serif; font-weight: 800;
+  font-size: clamp(3rem, 8vw, 6rem);
+  line-height: 1.0; letter-spacing: -2px;
+  margin-bottom: 24px;
+  animation: fadeUp 0.6s ease 0.2s both;
+}
+.hero h1 em { font-style: normal; color: var(--accent); }
+
+.hero-sub {
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  color: var(--muted); font-weight: 300;
+  max-width: 540px; line-height: 1.7;
+  margin-bottom: 48px;
+  animation: fadeUp 0.6s ease 0.3s both;
+}
+
+.hero-cta-row {
+  display: flex; gap: 14px; align-items: center; justify-content: center; flex-wrap: wrap;
+  animation: fadeUp 0.6s ease 0.4s both;
+}
+
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: var(--accent); color: #000;
+  border: none; border-radius: 10px;
+  padding: 16px 32px;
+  font-family: 'Syne', sans-serif; font-weight: 700;
+  font-size: 1rem; cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 0 40px rgba(0,229,255,0.25);
+}
+.btn-primary:hover { opacity: 0.88; transform: translateY(-2px); box-shadow: 0 0 60px rgba(0,229,255,0.4); }
+
+.btn-ghost {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: transparent; color: var(--muted);
+  border: 1px solid var(--border2); border-radius: 10px;
+  padding: 16px 28px;
+  font-family: 'Inter', sans-serif; font-weight: 400;
+  font-size: 0.92rem; cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-ghost:hover { color: var(--text); border-color: var(--border2); background: var(--surface2); }
+
+.hero-note {
+  font-size: 0.78rem; color: var(--muted);
+  margin-top: 18px;
+  animation: fadeUp 0.6s ease 0.5s both;
+}
+
+/* ── FAKE RECORDER UI ── */
+.recorder-preview {
+  margin: 48px auto 0;
+  width: min(820px, 90vw);
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 40px 120px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
+  animation: fadeUp 0.7s ease 0.6s both;
+}
+
+.recorder-titlebar {
+  background: var(--surface2);
+  padding: 12px 18px;
+  display: flex; align-items: center; gap: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.tb-dot { width: 12px; height: 12px; border-radius: 50%; }
+.tb-red { background: #ff5f57; }
+.tb-yellow { background: #ffbd2e; }
+.tb-green { background: #28c840; }
+.tb-title { font-family: 'Syne Mono', monospace; font-size: 0.75rem; color: var(--muted); margin-left: auto; margin-right: auto; }
+
+.recorder-body {
+  display: grid; grid-template-columns: 200px 1fr;
+}
+.recorder-sidebar {
+  padding: 16px; border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 4px;
+}
+.rs-item {
+  padding: 8px 12px; border-radius: 7px;
+  font-size: 0.78rem; color: var(--muted); cursor: default;
+  display: flex; align-items: center; gap: 8px;
+}
+.rs-item.rs-active { background: rgba(0,229,255,0.08); color: var(--accent); }
+
+.recorder-main {
+  padding: 20px;
+}
+.rec-toolbar {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;
+}
+.rec-btn {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 7px; padding: 7px 14px;
+  font-size: 0.75rem; color: var(--muted);
+  font-family: 'Inter', sans-serif; cursor: default;
+}
+.rec-btn.rec-start { background: rgba(255,68,68,0.1); border-color: rgba(255,68,68,0.3); color: var(--red); }
+.rec-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); animation: blink 1s ease infinite; }
+.fps-tag {
+  margin-left: auto;
+  background: rgba(0,229,255,0.08);
+  border: 1px solid rgba(0,229,255,0.2);
+  border-radius: 6px; padding: 5px 12px;
+  font-family: 'Syne Mono', monospace; font-size: 0.72rem; color: var(--accent);
+}
+
+.rec-canvas {
+  background: #060608; border-radius: 8px;
+  aspect-ratio: 16/9; width: 100%;
+  display: flex; align-items: center; justify-content: center;
+  position: relative; overflow: hidden;
+  border: 1px solid var(--border);
+}
+.rec-scanline {
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 3px; background: rgba(0,229,255,0.3);
+  animation: scanline 3s linear infinite;
+}
+.rec-canvas-text {
+  font-family: 'Syne Mono', monospace;
+  font-size: 0.75rem; color: #333; text-align: center;
+}
+.rec-timer {
+  position: absolute; top: 10px; right: 12px;
+  font-family: 'Syne Mono', monospace; font-size: 0.8rem;
+  color: var(--red); letter-spacing: 0.05em;
+}
+
+/* ── FEATURES SECTION ── */
+.section { position: relative; z-index: 1; padding: 100px 60px; }
+.section-label {
+  font-family: 'Syne Mono', monospace; font-size: 0.75rem;
+  color: var(--accent); letter-spacing: 0.15em; text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.section-title {
+  font-family: 'Syne', sans-serif; font-weight: 800;
+  font-size: clamp(2rem, 4vw, 3rem); letter-spacing: -1px;
+  margin-bottom: 60px; line-height: 1.1;
+}
+
+.features-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.feature-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 32px;
+  transition: border-color 0.3s, transform 0.3s;
+}
+.feature-card:hover { border-color: var(--border2); transform: translateY(-4px); }
+.feature-icon { font-size: 1.8rem; margin-bottom: 16px; }
+.feature-card h3 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; margin-bottom: 10px; }
+.feature-card p { font-size: 0.85rem; color: var(--muted); line-height: 1.7; }
+
+/* ── SPECS SECTION ── */
+.specs-section { position: relative; z-index: 1; padding: 80px 60px; background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.specs-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0; }
+.spec-item { padding: 32px 28px; border-right: 1px solid var(--border); }
+.spec-item:last-child { border-right: none; }
+.spec-val { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 2.6rem; color: var(--accent); letter-spacing: -1px; line-height: 1; margin-bottom: 8px; }
+.spec-lbl { font-size: 0.82rem; color: var(--muted); }
+
+/* ── PRICING ── */
+.pricing-card {
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: 20px; padding: 48px;
+  max-width: 420px; margin: 0 auto; text-align: center;
+  box-shadow: 0 0 80px rgba(0,229,255,0.06);
+}
+.pricing-tag { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 4rem; color: var(--accent); line-height: 1; }
+.pricing-tag span { font-size: 1.5rem; vertical-align: top; margin-top: 12px; display: inline-block; }
+.pricing-period { color: var(--muted); font-size: 0.85rem; margin: 8px 0 32px; }
+.pricing-features { list-style: none; text-align: left; display: flex; flex-direction: column; gap: 12px; margin-bottom: 36px; }
+.pricing-features li { font-size: 0.88rem; color: var(--muted); display: flex; align-items: center; gap: 10px; }
+.pricing-features li::before { content: '✓'; color: var(--accent); font-weight: 700; }
+.pricing-dl { width: 100%; }
+
+/* ── DOWNLOAD MODAL ── */
+.overlay {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.8); backdrop-filter: blur(12px);
+  align-items: center; justify-content: center;
+}
+.overlay.show { display: flex; animation: fadeIn 0.3s ease both; }
+
+.dl-modal {
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: 20px; padding: 48px 52px;
+  width: min(540px, 92vw);
+  box-shadow: 0 40px 120px rgba(0,0,0,0.5);
+  animation: slideUp 0.35s cubic-bezier(0.34,1.2,0.64,1) both;
+  text-align: center;
+}
+.dl-modal h2 {
+  font-family: 'Syne', sans-serif; font-weight: 800;
+  font-size: 1.7rem; letter-spacing: -0.5px; margin-bottom: 10px;
+}
+.dl-modal p { font-size: 0.88rem; color: var(--muted); margin-bottom: 36px; line-height: 1.6; }
+
+.os-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 14px; margin-bottom: 24px;
+}
+.os-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 14px; padding: 22px 14px;
+  cursor: pointer; transition: all 0.2s;
+  font-family: 'Inter', sans-serif;
+}
+.os-btn:hover { border-color: var(--accent); background: rgba(0,229,255,0.05); transform: translateY(-3px); }
+.os-icon { font-size: 2rem; }
+.os-name { font-size: 0.8rem; font-weight: 500; color: var(--text); }
+.os-ver { font-size: 0.7rem; color: var(--muted); }
+
+.dl-close { background: none; border: none; color: var(--muted); font-size: 0.82rem; cursor: pointer; margin-top: 4px; transition: color 0.2s; font-family: 'Inter', sans-serif; }
+.dl-close:hover { color: var(--text); }
+
+/* ── RICK MODAL ── */
+#rickModal {
+  display: none; position: fixed; inset: 0; z-index: 300;
+  background: #000;
+  align-items: center; justify-content: center; flex-direction: column;
+}
+#rickModal.show { display: flex; animation: fadeIn 0.4s ease both; }
+#rickModal video { width: min(860px, 100vw); max-height: 100vh; }
+.rick-hint {
+  position: absolute; bottom: 24px;
+  color: rgba(255,255,255,0.25); font-size: 0.8rem;
+  cursor: pointer; transition: color 0.2s;
+  font-family: 'Syne Mono', monospace;
+}
+.rick-hint:hover { color: rgba(255,255,255,0.6); }
+
+/* ── FOOTER ── */
+footer {
+  position: relative; z-index: 1;
+  border-top: 1px solid var(--border);
+  padding: 40px 60px;
+  display: flex; align-items: center; justify-content: space-between;
+  color: var(--muted); font-size: 0.82rem;
+}
+.footer-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.1rem; color: var(--text); }
+.footer-logo span { color: var(--accent); }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeIn   { from { opacity: 0 } to { opacity: 1 } }
+@keyframes fadeUp   { from { opacity: 0; transform: translateY(20px) } to { opacity: 1; transform: translateY(0) } }
+@keyframes slideUp  { from { opacity: 0; transform: translateY(30px) } to { opacity: 1; transform: translateY(0) } }
+@keyframes slideDown{ from { opacity: 0; transform: translateY(-10px) } to { opacity: 1; transform: translateY(0) } }
+@keyframes blink    { 0%,100% { opacity: 1 } 50% { opacity: 0.3 } }
+@keyframes scanline { from { top: -4px } to { top: 100% } }
+@keyframes timerTick{ 0%,100%{ opacity: 1 } 49%,51%{ opacity: 0 } }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Sc<span>Rec</span></div>
+  <div class="nav-links">
+    <a onclick="scrollTo(0,0)">Home</a>
+    <a href="#features">Features</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#download">Download</a>
+  </div>
+  <button class="nav-cta" onclick="openDlModal()">Download Free →</button>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-badge"><span class="badge-dot"></span> v3.1.0 — Now with 120 FPS capture</div>
+  <h1>Record anything.<br><em>Free forever.</em></h1>
+  <p class="hero-sub">ScRec is the fastest, cleanest screen recorder on the planet. 60–120 FPS. No watermarks. No subscriptions. No catches.</p>
+  <div class="hero-cta-row">
+    <button class="btn-primary" onclick="openDlModal()">
+      ⬇ Download ScRec
+    </button>
+    <button class="btn-ghost" onclick="openDlModal()">▶ Watch Demo</button>
+  </div>
+  <p class="hero-note">Works on Windows · macOS · Linux &nbsp;·&nbsp; Free forever, no account needed</p>
+
+  <!-- FAKE APP PREVIEW -->
+  <div class="recorder-preview">
+    <div class="recorder-titlebar">
+      <div class="tb-dot tb-red"></div>
+      <div class="tb-dot tb-yellow"></div>
+      <div class="tb-dot tb-green"></div>
+      <div class="tb-title">ScRec — New Recording</div>
+    </div>
+    <div class="recorder-body">
+      <div class="recorder-sidebar">
+        <div class="rs-item rs-active">⏺ Record</div>
+        <div class="rs-item">✂️ Trim</div>
+        <div class="rs-item">🎨 Annotate</div>
+        <div class="rs-item">📤 Export</div>
+        <div class="rs-item">⚙️ Settings</div>
+      </div>
+      <div class="recorder-main">
+        <div class="rec-toolbar">
+          <div class="rec-btn rec-start"><span class="rec-dot"></span> Recording</div>
+          <div class="rec-btn">🖥 Full Screen</div>
+          <div class="rec-btn">🎙 Mic On</div>
+          <div class="rec-btn">📷 Camera Off</div>
+          <div class="fps-tag" id="fpsTag">120 FPS</div>
+        </div>
+        <div class="rec-canvas">
+          <div class="rec-scanline"></div>
+          <div class="rec-canvas-text">● Capturing display output<br><span style="color:#1a1a2e">resolution: 2560×1440 · codec: H.265</span></div>
+          <div class="rec-timer" id="recTimer">00:00:00</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SPECS -->
+<div class="specs-section">
+  <div class="specs-grid">
+    <div class="spec-item"><div class="spec-val">120</div><div class="spec-lbl">Max FPS capture</div></div>
+    <div class="spec-item"><div class="spec-val">4K</div><div class="spec-lbl">Resolution support</div></div>
+    <div class="spec-item"><div class="spec-val">0ms</div><div class="spec-lbl">Perceived lag</div></div>
+    <div class="spec-item"><div class="spec-val">∞</div><div class="spec-lbl">Recording length</div></div>
+    <div class="spec-item"><div class="spec-val">$0</div><div class="spec-lbl">Cost, forever</div></div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="section" id="features">
+  <div class="section-label">Why ScRec</div>
+  <div class="section-title">Everything you need.<br>Nothing you don't.</div>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">⚡</div>
+      <h3>60–120 FPS Recording</h3>
+      <p>Buttery smooth capture at up to 120 frames per second. Perfect for gaming, UI demos, and anything that moves fast.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🚫</div>
+      <h3>Zero Watermarks</h3>
+      <p>Your recordings are yours. No branding, no logos, no "made with ScRec" splashed across your content. Ever.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🎙️</div>
+      <h3>System + Mic Audio</h3>
+      <p>Capture both system audio and your microphone simultaneously, with independent volume controls for each source.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">✂️</div>
+      <h3>Built-in Trim & Edit</h3>
+      <p>Quick-trim, cut, and annotate directly in ScRec. No external editor needed for basic cleanup.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📦</div>
+      <h3>Smart Export</h3>
+      <p>Export to MP4, WebM, GIF, or MOV. H.264 and H.265 codec support with configurable bitrate.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔒</div>
+      <h3>100% Local</h3>
+      <p>Everything stays on your machine. No cloud uploads, no telemetry, no account required. Just install and record.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="section" id="pricing" style="padding-top:0; text-align:center;">
+  <div class="section-label">Pricing</div>
+  <div class="section-title">One price.<br>Forever.</div>
+  <div class="pricing-card">
+    <div class="pricing-tag"><span>$</span>0</div>
+    <div class="pricing-period">per month · per year · forever</div>
+    <ul class="pricing-features">
+      <li>Unlimited recording length</li>
+      <li>60 FPS and 120 FPS capture</li>
+      <li>4K resolution support</li>
+      <li>No watermarks, ever</li>
+      <li>System + mic audio capture</li>
+      <li>Built-in trim &amp; annotate</li>
+      <li>All export formats included</li>
+      <li>Free updates for life</li>
+    </ul>
+    <button class="btn-primary pricing-dl" id="download" onclick="openDlModal()">⬇ Download Free — It's Actually Free</button>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Sc<span>Rec</span></div>
+  <div>© 2026 ScRec. Free forever. No tricks.</div>
+  <div style="display:flex;gap:24px">
+    <a href="#" style="color:var(--muted);text-decoration:none">Privacy</a>
+    <a href="#" style="color:var(--muted);text-decoration:none">Changelog</a>
+    <a href="#" style="color:var(--muted);text-decoration:none">GitHub</a>
+  </div>
+</footer>
+
+<!-- DOWNLOAD OS MODAL -->
+<div class="overlay" id="dlModal">
+  <div class="dl-modal">
+    <h2>Choose your platform</h2>
+    <p>Select your operating system to begin downloading ScRec v3.1.0 (64-bit).</p>
+    <div class="os-grid">
+      <div class="os-btn" onclick="triggerDownload()">
+        <div class="os-icon">🪟</div>
+        <div class="os-name">Windows</div>
+        <div class="os-ver">10 / 11</div>
+      </div>
+      <div class="os-btn" onclick="triggerDownload()">
+        <div class="os-icon">🍎</div>
+        <div class="os-name">macOS</div>
+        <div class="os-ver">12 Monterey+</div>
+      </div>
+      <div class="os-btn" onclick="triggerDownload()">
+        <div class="os-icon">🐧</div>
+        <div class="os-name">Linux</div>
+        <div class="os-ver">.deb / .rpm / AppImage</div>
+      </div>
+    </div>
+    <button class="dl-close" onclick="closeDlModal()">✕ Close</button>
+  </div>
+</div>
+
+<!-- RICK MODAL -->
+<div id="rickModal">
+  <video id="rickVideo" src="rickroll.mp4" autoplay playsinline></video>
+  <span class="rick-hint" onclick="closeRick()">[press esc to close — just kidding, you can't]</span>
+</div>
+
+<script>
+  // ── Fake timer ──
+  let secs = 0;
+  setInterval(() => {
+    secs++;
+    const h = String(Math.floor(secs/3600)).padStart(2,'0');
+    const m = String(Math.floor((secs%3600)/60)).padStart(2,'0');
+    const s = String(secs%60).padStart(2,'0');
+    document.getElementById('recTimer').textContent = `${h}:${m}:${s}`;
+  }, 1000);
+
+  // ── FPS flicker ──
+  const fpsList = ['60 FPS','90 FPS','120 FPS','120 FPS','120 FPS'];
+  let fi = 0;
+  setInterval(() => {
+    fi = (fi+1) % fpsList.length;
+    document.getElementById('fpsTag').textContent = fpsList[fi];
+  }, 2200);
+
+  // ── Download modal ──
+  function openDlModal() {
+    document.getElementById('dlModal').classList.add('show');
+  }
+  function closeDlModal() {
+    document.getElementById('dlModal').classList.remove('show');
+  }
+
+  // ── Rickroll ──
+  function triggerDownload() {
+    document.getElementById('dlModal').classList.remove('show');
+    const modal = document.getElementById('rickModal');
+    const video = document.getElementById('rickVideo');
+    modal.classList.add('show');
+    video.currentTime = 0;
+    video.play();
+  }
+
+  function closeRick() {
+    // lol, close button does nothing on purpose — but let's be kind
+    document.getElementById('rickModal').classList.remove('show');
+    document.getElementById('rickVideo').pause();
+  }
+
+  // ESC closes download modal (but NOT rick modal, he stays)
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeDlModal();
+  });
+</script>
+</body>
+</html>
